@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "EDBodies": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\C. Cortellini\\obs\""
+    }
+  }
+}

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>EDBodies</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+        <style>
+            h1 {
+                color: rgb(255, 255, 255);
+                text-align: center;
+            }
+
+            table {
+                border-collapse: collapse;
+                border: 2px black solid;
+                font: 12px sans-serif;
+            }
+
+            td {
+                border: 1px black solid;
+                padding: 5px;
+                color: rgb(255, 255, 255);
+            }
+        </style>
+
+    </head>
+    <body>
+        <h1 id="systemName">EDBodies - Loading</h1>
+        <div id="bodies-div"></div>
+        <div id="bodies-data" style="display:none">EDBodies - No Data</div>
+
+        <script src='./d3.min.js'></script>
+        <script src='./bodies.js'></script>
+        <link href="./tabulator_midnight.min.css" rel="stylesheet">
+        <script src='./tabulator.min.js'></script>
+        <script>
+            function getData() {
+                var data = document.getElementById("bodies-data").textContent.replace(/&/g, "\n");
+                console.log(`getData: ${data}`);
+                return data;
+            }
+
+            function setData(data) {
+                //console.log(`setData: ${data}`);
+                var div = document.getElementById("bodies-data");
+                div.innerHTML = data;
+            }
+
+            function createTable() {
+                //console.log("Creating new table");
+                var div = document.getElementById("bodies-div");
+                while (div.firstChild) {
+                    div.removeChild(div.firstChild);
+                }
+
+                // Parse and dedupe the data
+                var parsed = d3.dsvFormat("|").parseRows(getData());
+                var bodies = {};
+                var arrayLength = parsed.length;
+                for (var i = arrayLength-1; i > -1; i--) {
+                    if (bodies[parsed[i][0]]) {
+                        parsed.splice(i, 1);
+                    } else {
+                        bodies[parsed[i][0]] = true;
+                    }
+                }
+
+                var element = document.getElementById("systemName");
+                element.innerHTML = parsed.shift();
+                var table = d3.select("#bodies-div").append('table').attr("id", "bodies-table");
+                var thead = table.append('thead');
+
+                thead.append('tr')
+                    .selectAll('th')
+                    .data(['Body Name', 'Estimated Value', 'Class', 'Landable'])
+                    .enter()
+                    .append('th')
+                    .text(function (d) { return d });
+
+                var tbody = table.append('tbody')
+                    .selectAll("tr")
+                    .data(parsed).enter()
+                    .append("tr")
+
+                    .selectAll("td")
+                    .data(function (d) { return d; }).enter()
+                    .append("td")
+                    .text(function (d) { return d; });
+
+                var fancyTable = new Tabulator("#bodies-table", {
+                    height: "610px",
+                    pagination: "local",
+                    paginationSize: 21,
+                    columns: [
+                        { title: "Body Name", field: "name", sorter: "alphanum" },
+                        { title: "Estimated Value", field: "value", sorter: "number", formatter: "money", formatterParams: { precision: false } },
+                        { title: "Class", field: "class", sorter: "string" },
+                        { title: "Landable", field: "landable", sorter: "string", sorterParams: { alignEmptyValues: "bottom" } }
+                    ],
+                    initialSort: [
+                        { column: "value", dir: "desc" }
+                    ]
+                });
+            }
+
+            setData(EDBodies());
+
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", createTable);
+            } else {
+                createTable();
+            }
+
+            onPropertyUpdate = function () {
+                var div = document.getElementById("systemName");
+                //console.log(`onPropertyUpdate - header = ${div.innerHTML}`);
+                if (div.innerHTML === "Needs Update") {
+                    createTable();
+                }
+            };
+
+        </script>
+    </body>
+</html>
