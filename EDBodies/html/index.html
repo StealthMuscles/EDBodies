@@ -36,7 +36,7 @@
         <script>
             function getData() {
                 var data = document.getElementById("bodies-data").textContent.replace(/&/g, "\n");
-                console.log(`getData: ${data}`);
+                //console.log(`getData: ${data}`);
                 return data;
             }
 
@@ -57,7 +57,7 @@
                 var parsed = d3.dsvFormat("|").parseRows(getData());
                 var bodies = {};
                 var arrayLength = parsed.length;
-                for (var i = arrayLength-1; i > -1; i--) {
+                for (var i = arrayLength-1; i > 0; i--) {
                     if (bodies[parsed[i][0]]) {
                         parsed.splice(i, 1);
                     } else {
