@@ -72,7 +72,7 @@
 
                 thead.append('tr')
                     .selectAll('th')
-                    .data(['Body Name', 'Estimated Value', 'Class', 'Landable'])
+                    .data(['Body Name', 'Estimated Value', 'Class', 'Landable', 'Volcanism', 'Gravity', 'Description'])
                     .enter()
                     .append('th')
                     .text(function (d) { return d });
@@ -95,11 +95,18 @@
                         { title: "Body Name", field: "name", sorter: "alphanum" },
                         { title: "Estimated Value", field: "value", sorter: "number", formatter: "money", formatterParams: { precision: false } },
                         { title: "Class", field: "class", sorter: "string" },
-                        { title: "Landable", field: "landable", sorter: "string", sorterParams: { alignEmptyValues: "bottom" } }
+                        { title: "Landable", field: "landable", sorter: "string", sorterParams: { alignEmptyValues: "bottom" } },
+                        { title: "Volcanism", field: "volcanism", sorter: "string" },
+                        { title: "Gravity", field: "gravity", sorter: "number" },
+                        { title: "Description", field: "description", formatter:"textarea", visible:false }
                     ],
                     initialSort: [
                         { column: "value", dir: "desc" }
-                    ]
+                    ],
+                    selectable: 1,
+                    rowSelected: function(row){
+                        alert(row.getData().description);
+                    }
                 });
             }
 
