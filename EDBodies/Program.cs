@@ -71,7 +71,8 @@ namespace EDBodies
             string[] args = Environment.GetCommandLineArgs();
             string data = File.ReadAllText($"{args[1]}\\EstimatedValues.txt");
             //Console.WriteLine(data);
-            if (!LogitechArx.LogiArxSetTagContentById("bodies-data", data.Replace(System.Environment.NewLine, "&")))
+            
+            if (!LogitechArx.LogiArxSetTagContentById("bodies-data", data.Replace(System.Environment.NewLine, "&").Replace(@"\n", @"\\n")))
             {
                 Console.WriteLine($"LogiArxSetTagContentById(bodies-data) failed: {LogitechArx.LogiArxGetLastError()}");
             }
@@ -118,7 +119,7 @@ namespace EDBodies
 
                 string[] args = Environment.GetCommandLineArgs();
                 string data = File.ReadAllText($"{args[1]}\\EstimatedValues.txt", System.Text.Encoding.UTF8);
-                string script = $"function EDBodies() {{ return `{data.Replace(System.Environment.NewLine, "&")}` }};";
+                string script = $"function EDBodies() {{ return `{data.Replace(System.Environment.NewLine, "&").Replace(@"\n", @"\\n")}` }};";
                 //Console.WriteLine(script);
                 if (!LogitechArx.LogiArxAddUTF8StringAs(script, "bodies.js", "application/javascript"))
                 {
