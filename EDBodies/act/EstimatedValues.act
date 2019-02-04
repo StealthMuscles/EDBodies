@@ -1,0 +1,131 @@
+﻿ACTIONFILE V4
+
+ENABLED True
+
+//EVENT FSDJump, HandleEvent, "", Condition AlwaysTrue
+//EVENT DiscoveryScan, HandleEvent, "", Condition AlwaysTrue
+//EVENT FSSDiscoveryScan, HandleEvent, "", Condition AlwaysTrue
+//EVENT FSSSignalDiscovered, HandleEvent, "", Condition AlwaysTrue
+//EVENT Scan, HandleEvent, "", Condition AlwaysTrue
+//EVENT Scanned, HandleEvent, "", Condition AlwaysTrue
+//EVENT SAAScanComplete, HandleEvent, "", Condition AlwaysTrue
+EVENT All, HandleEvent, "", TriggerType IsOneOf onNewEntry Or TriggerType IsOneOf NewEntry
+
+//*************************************************************
+// HandleEvent
+// Events: FSDJump, DiscoveryScan, FSSDiscoveryScan, FSSSignalDiscovered, Scan, Scanned, SAAScanComplete
+//*************************************************************
+PROGRAM HandleEvent
+
+//Print
+//Print ********* New EVENT *********
+//Print EventEventSummary=%(EventEventSummary)
+//Print EventClass_EventTypeID=%(EventClass_EventTypeID)
+//Print EventClass_EventTypeStr=%(EventClass_EventTypeStr)
+//Print EventEventDescription=%(EventEventDescription)
+//Print EventEventDetailedInfo=%(EventEventDetailedInfo)
+//Print EventStarSystem=%(EventStarSystem)
+
+If EventClass_EventTypeID $== FSDJump
+    Event FROM %(EventJID) INFO
+    
+    //Print ********* New FSDJump EVENT *********
+    //pragma dumpvars *
+    set mode = create
+    Scan "%(EventStarSystem)"
+    //Print ********* Scan %(EventStarSystem) *********
+    //pragma dumpvars S_*
+    //Print
+
+    Set visits = "visits"
+    If EC_VisitCount $== 1
+         Set visits = "visit"
+    
+    Call WriteFile(file="EstimatedValues.txt",text="%(EventStarSystem) (%(EC_VisitCount) %(visits))",mode="create")
+
+    Loop %(S_Stars),S
+        Set prefix = S_Star_%(S)_
+        Set planets = "%indirect(\"%(prefix)Planets\")"
+        Set type = "%indirect(\"%(prefix)type\")"
+
+        If type $== barycentre
+            Set name = "%indirect(\"%(prefix)assignedfullname\")"
+            Call WriteFile(file="EstimatedValues.txt",text="%(name)|0|%(type)",mode="append")
+        Else
+            Set name = "%indirect(\"%(prefix)bodyname\")"
+            Set value = "%indirect(\"%(prefix)value\")"
+            Set startypetext = "%indirect(\"%(prefix)startypetext\")"
+            Set text = "%indirect(\"%(prefix)text\")"
+            Call WriteFile(file="EstimatedValues.txt",text="%(name)|%(value)|%(startypetext)||||%(text)",mode="append")
+        
+        Loop %(planets),P
+            Set prefix = S_Planet_%(S)_%(P)_
+            Set type = "%indirect(\"%(prefix)type\")"
+            Set moons = "%indirect(\"%(prefix)Moons\")"
+
+            If type $!= belt
+                Set name = "%indirect(\"%(prefix)bodyname\")"
+                Set value = "%indirect(\"%(prefix)value\")"
+                Set isstar = "%indirect(\"%(prefix)isstar\")"
+                Set text = "%indirect(\"%(prefix)text\")"
+            
+                If isstar $== 1
+                    Set startypetext = "%indirect(\"%(prefix)startypetext\")"
+                    Call WriteFile(file="EstimatedValues.txt",text="%(name)|%(value)|%(startypetext)||||%(text)",mode="append")
+                Else
+                    Set class = "%indirect(\"%(prefix)class\")"
+                    Set landable = "%indirect(\"%(prefix)landable\")"
+                    Set volcanism = "%indirect(\"%(prefix)volcanism\")"
+                    Set gravity = "%indirect(\"%(prefix)gravity\")"
+                    Call WriteFile(file="EstimatedValues.txt",text="%(name)|%(value)|%(class)|%(landable)|%(volcanism)|%(gravity)|%(text)",mode="append")
+
+            Loop %(moons),M
+                Set prefix = S_Moon_%(S)_%(P)_%(M)_
+                Set type = "%indirect(\"%(prefix)type\")"
+                Set submoons = "%indirect(\"%(prefix)Submoons\")"
+                Set name = "%indirect(\"%(prefix)bodyname\")"
+                Set value = "%indirect(\"%(prefix)value\")"
+                Set landable = "%indirect(\"%(prefix)landable\")"
+                Set volcanism = "%indirect(\"%(prefix)volcanism\")"
+                Set gravity = "%indirect(\"%(prefix)gravity\")"
+                Set text = "%indirect(\"%(prefix)text\")"
+                If type $== beltcluster
+                    Set class = "Belt Cluster"
+                Else
+                    Set class = "%indirect(\"%(prefix)class\")"
+                Call WriteFile(file="EstimatedValues.txt",text="%(name)|%(value)|%(class)|%(landable)|%(volcanism)|%(gravity)|%(text)",mode="append")
+
+                Loop %(submoons),SM
+                    Set prefix = S_SubMoon_%(S)_%(P)_%(M)_%(SM)_
+                    Set name = "%indirect(\"%(prefix)bodyname\")"
+                    Set value = "%indirect(\"%(prefix)value\")"
+                    Set class = "%indirect(\"%(prefix)class\")"
+                    Set landable = "%indirect(\"%(prefix)landable\")"
+                    Set volcanism = "%indirect(\"%(prefix)volcanism\")"
+                    Set gravity = "%indirect(\"%(prefix)gravity\")"
+                    Set text = "%indirect(\"%(prefix)text\")"
+                    Call WriteFile(file="EstimatedValues.txt",text="%(name)|%(value)|%(class)|%(landable)|%(volcanism)|%(gravity)|%(text)",mode="append")
+
+ElseIf EventClass_BodyName IsPresent AND EventClass_EstimatedValue IsPresent
+    If EventClass_IsStar $== 1
+        Call WriteFile(file="EstimatedValues.txt",text="%(EventClass_BodyName)|%(EventClass_EstimatedValue)|%(EventClass_StarTypeText)||||%(EventEventDetailedInfo)",mode="append")
+    Else
+        //pragma dumpvars *
+        Set landable = "%ifnonzero(EventClass_IsLandable,\"Landable\",\"Not Landable\")"
+        Call WriteFile(file="EstimatedValues.txt",text="%(EventClass_BodyName)|%(EventClass_EstimatedValue)|%(EventClass_PlanetClass)|%(landable)|%(EventClass_Volcanism)|%(EventClass_nSurfaceGravityG)|%(EventEventDetailedInfo)",mode="append")
+
+END PROGRAM
+
+//*************************************************************
+// WriteFile
+//*************************************************************
+PROGRAM WriteFile
+
+Set fullpath = C:\Users\C. Cortellini\obs\%(file)
+Let success = %openfile(h1, fullpath, mode)
+set escaped = %escapechar(text)
+If success IsTrue
+    Expr %writeline(h1, escaped)
+    Expr %closefile(h1)
+
+END PROGRAM
