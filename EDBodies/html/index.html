@@ -35,8 +35,8 @@
         <script src='./tabulator.min.js'></script>
         <script>
             function getData() {
-                var data = document.getElementById("bodies-data").textContent.replace(/&/g, "\n");
-                //console.log(`getData: ${data}`);
+                var data = document.getElementById("bodies-data").textContent.trimEnd().replace(/&/g, "\n");
+                //console.log(`getData:\n${data}`);
                 return data;
             }
 
