@@ -58,7 +58,7 @@
                 var bodies = {};
                 var arrayLength = parsed.length;
                 for (var i = arrayLength-1; i > 0; i--) {
-                    if (bodies[parsed[i][0]]) {
+                    if (parsed[i].length < 1 || bodies[parsed[i][0]]) {
                         parsed.splice(i, 1);
                     } else {
                         bodies[parsed[i][0]] = true;

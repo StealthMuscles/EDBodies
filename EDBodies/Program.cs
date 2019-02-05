@@ -118,7 +118,7 @@ namespace EDBodies
                 }
 
                 string[] args = Environment.GetCommandLineArgs();
-                string data = File.ReadAllText($"{args[1]}\\EstimatedValues.txt", System.Text.Encoding.UTF8);
+                string data = File.ReadAllText($"{args[1]}\\EstimatedValues.txt");
                 string script = $"function EDBodies() {{ return `{data.Replace(System.Environment.NewLine, "&").Replace(@"\n", @"\\n")}` }};";
                 //Console.WriteLine(script);
                 if (!LogitechArx.LogiArxAddUTF8StringAs(script, "bodies.js", "application/javascript"))
