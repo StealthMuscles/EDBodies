@@ -62,14 +62,29 @@ namespace EDBodies
             }
         }
 
+        private static string SafeReadFile(string path)
+        {
+            while (true)
+            {
+                try
+                {
+                    Thread.Sleep(1000);
+                    return File.ReadAllText(path);
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine($"\nIOException reading file: {ex.Message}");
+                }
+            }
+        }
+
         // Define the event handlers.
         private static void OnChanged(object source, FileSystemEventArgs e)
         {
             // Specify what is done when a file is changed, created, or deleted.
             Console.WriteLine($"File: {e.FullPath} {e.ChangeType}");
-            Thread.Sleep(2000);
             string[] args = Environment.GetCommandLineArgs();
-            string data = File.ReadAllText($"{args[1]}\\EstimatedValues.txt");
+            string data = SafeReadFile($"{args[1]}\\EstimatedValues.txt");
             //Console.WriteLine(data);
             
             if (!LogitechArx.LogiArxSetTagContentById("bodies-data", data.Replace(System.Environment.NewLine, "&").Replace(@"\n", @"\\n")))
@@ -118,7 +133,7 @@ namespace EDBodies
                 }
 
                 string[] args = Environment.GetCommandLineArgs();
-                string data = File.ReadAllText($"{args[1]}\\EstimatedValues.txt");
+                string data = SafeReadFile($"{args[1]}\\EstimatedValues.txt");
                 string script = $"function EDBodies() {{ return `{data.Replace(System.Environment.NewLine, "&").Replace(@"\n", @"\\n")}` }};";
                 //Console.WriteLine(script);
                 if (!LogitechArx.LogiArxAddUTF8StringAs(script, "bodies.js", "application/javascript"))
