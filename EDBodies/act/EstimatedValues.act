@@ -121,7 +121,7 @@ END PROGRAM
 //*************************************************************
 PROGRAM WriteFile
 
-Set fullpath = C:\Users\C. Cortellini\obs\%(file)
+Set fullpath = C:\Users\steal\obs\%(file)
 Let success = %openfile(h1, fullpath, mode)
 set escaped = %escapechar(text)
 If success IsTrue
